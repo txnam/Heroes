@@ -33,7 +33,7 @@ public:
     }
 };
 
-double gain(double A, double B, double score, double K = 10) {
+double gain(double A, double B, double score, double K = 1) {
     double Qa = std::pow(10, A / 400), Qb = std::pow(10, B / 400);
     double E = K * (score - Qa / (Qa + Qb));
     return A + E;
@@ -55,6 +55,11 @@ double vs(const Hero& A, const Hero& B, int turn = 100) {
     return 0.5;
 }
 
+// Lưu ý:
+// - turn = 100: ưu thế nhất là nâng agi + atk
+// - turn = 200: ưu thế nhất là nâng def + atk
+// - turn = 300: ưu thế nhất là nâng def + agi + atk
+// - turn = 400: ưu thế nhất là nâng def
 double vs2(Hero& A, Hero& B, int turn = 100) {
     double hpA = A.hp, hpB = B.hp;
     double a = 0, b = 50;
@@ -157,23 +162,69 @@ void train2(int limit = 400) {
 }
 
 int main() {
+    /*
     std::vector<Hero> h;
-    for (int i = 400; i <= 400; ++i) {
+    for (int i = 1; i <= 40; ++i) {
         heroes.clear();
         add_hero_level(i);
         std::random_device rd;
         std::mt19937 gen(rd());
         std::shuffle(heroes.begin(), heroes.end(), gen);
-        h.insert(h.end(), heroes.begin(), heroes.begin() + std::min(1000, (int)heroes.size()));
+        h.insert(h.end(), heroes.begin(), heroes.begin() + std::min(10, (int)heroes.size()));
     }
     heroes = h;
     std::random_device rd;
     std::mt19937 gen(rd());
     std::shuffle(heroes.begin(), heroes.end(), gen);
+    */
+
+    add_hero(0, 0, 0, 0);
+    for (int lv = 1; lv <= 40; ++lv)
+        add_hero_level(lv);
+    /*
+    for (int lv = 1; lv <= 120; ++lv) {
+        add_hero(lv, 0, 0, 0);
+        add_hero(0, lv, 0, 0);
+        add_hero(0, 0, lv, 0);
+        add_hero(0, 0, 0, lv);
+    }
+    for (int lv = 1; lv <= 60; ++lv) {
+        add_hero(lv, lv, 0, 0);
+        add_hero(lv, 0, lv, 0);
+        add_hero(lv, 0, 0, lv);
+        add_hero(0, lv, lv, 0);
+        add_hero(0, lv, 0, lv);
+        add_hero(0, 0, lv, lv);
+    }
+    for (int lv = 1; lv <= 40; ++lv) {
+        add_hero(lv, lv, lv, 0);
+        add_hero(lv, lv, 0, lv);
+        add_hero(lv, 0, lv, lv);
+        add_hero(0, lv, lv, lv);
+    }        
+    for (int lv = 1; lv <= 30; ++lv) {
+        add_hero(lv, lv, lv, lv);
+    }
+    for (int lv = 1; lv <= 20; ++lv) {
+        add_hero(lv+lv+lv, lv, lv, lv);
+        add_hero(lv+lv, lv+lv, lv, lv);
+        add_hero(lv+lv, lv, lv+lv, lv);
+        add_hero(lv+lv, lv, lv, lv+lv);
+        add_hero(lv, lv+lv+lv, lv, lv);
+        add_hero(lv, lv+lv, lv+lv, lv);
+        add_hero(lv, lv+lv, lv, lv+lv);
+        add_hero(lv, lv, lv+lv+lv, lv);
+        add_hero(lv, lv, lv+lv, lv+lv);
+        add_hero(lv, lv, lv, lv+lv+lv);
+    }
+    */
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::shuffle(heroes.begin(), heroes.end(), gen);
 
     std::cout << "Tất cả " << heroes.size() << " heroes ==========================" << std::endl;
-    for (int i = 0; i < 100; ++i) {
-        train2();
+    for (int i = 1; i <= 100; ++i) {
+        train(50'000'000);
         auto maxHero = *std::max_element(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
             return a.elo < b.elo;
         });
@@ -187,7 +238,7 @@ int main() {
     for (const auto& h : heroes) {
         std::cout << h.toString() << std::endl;
     }
-    /*
+    
     std::cout << "Xếp theo Tỉ lệ thắng ===============" << std::endl;
     std::sort(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
         double rateA = a.win / (double)(a.win + a.draw + a.lose);
@@ -207,7 +258,7 @@ int main() {
     for (const auto& h : heroes) {
         std::cout << h.toString() << std::endl;
     }
-    */
+
 
     return 0;
 }
