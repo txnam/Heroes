@@ -5,6 +5,8 @@
 #include <random>
 #include <iomanip>
 
+using namespace std;
+
 class Hero {
 public:
     int level;
@@ -14,19 +16,19 @@ public:
     Hero(int cấp, double máu, double thủ, double mẫn, double công1, double công2, double elo = 2000, int thắng = 0, int hòa = 0, int thua = 0)
         : level(cấp), hp(máu), defence(thủ), agility(mẫn), attack1(công1), attack2(công2), elo(elo), win(thắng), draw(hòa), lose(thua) {}
 
-    std::string toString() const {
+    string toString() const {
         int total = win + draw + lose;
-        std::ostringstream oss;
+        ostringstream oss;
         if (total > 0) {
-            oss << "(cấp " << level << ") HP: " << hp << ", DEF: " << std::fixed << std::setprecision(1) << defence
+            oss << "(cấp " << level << ") HP: " << hp << ", DEF: " << fixed << setprecision(1) << defence
                 << ", AGI: " << agility << ", ATK: " << attack1 << "-" << attack2
-                << ", ELO: " << std::fixed << std::setprecision(2) << elo
-                << ", Rate: " << total << " [" << std::fixed << std::setprecision(1)
+                << ", ELO: " << fixed << setprecision(2) << elo
+                << ", Rate: " << total << " [" << fixed << setprecision(1)
                 << (win * 100.0 / total) << "%/" << (draw * 100.0 / total) << "%/" << (lose * 100.0 / total) << "%]";
         } else {
-            oss << "(cấp " << level << ") HP: " << hp << ", DEF: " << std::fixed << std::setprecision(1) << defence
+            oss << "(cấp " << level << ") HP: " << hp << ", DEF: " << fixed << setprecision(1) << defence
                 << ", AGI: " << agility << ", ATK: " << attack1 << "-" << attack2
-                << ", ELO: " << std::fixed << std::setprecision(2) << elo
+                << ", ELO: " << fixed << setprecision(2) << elo
                 << ", Rate: " << total;
         }
         return oss.str();
@@ -34,22 +36,22 @@ public:
 };
 
 double gain(double A, double B, double score, double K = 1) {
-    double Qa = std::pow(10, A / 400), Qb = std::pow(10, B / 400);
+    double Qa = pow(10, A / 400), Qb = pow(10, B / 400);
     double E = K * (score - Qa / (Qa + Qb));
     return A + E;
 }
 
 double vs(const Hero& A, const Hero& B, int turn = 100) {
     double hp1 = A.hp, hp2 = B.hp;
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> disA(A.attack1, A.attack2);
-    std::uniform_real_distribution<> disB(B.attack1, B.attack2);
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_real_distribution<> disA(A.attack1, A.attack2);
+    uniform_real_distribution<> disB(B.attack1, B.attack2);
 
     for (int i = 0; i < turn; ++i) {
-        hp2 -= std::max(disA(gen) - B.defence, 0.0) * A.agility / B.agility;
+        hp2 -= max(disA(gen) - B.defence, 0.0) * A.agility / B.agility;
         if (hp2 < 0) return 1;
-        hp1 -= std::max(disB(gen) - A.defence, 0.0) * B.agility / A.agility;
+        hp1 -= max(disB(gen) - A.defence, 0.0) * B.agility / A.agility;
         if (hp1 < 0) return 0;
     }
     return 0.5;
@@ -64,25 +66,25 @@ double vs2(Hero& A, Hero& B, int turn = 100) {
     double hpA = A.hp, hpB = B.hp;
     double a = 0, b = 50;
     int turnA = 0, turnB = 0;
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> disA(A.attack1, A.attack2);
-    std::uniform_real_distribution<> disB(B.attack1, B.attack2);
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_real_distribution<> disA(A.attack1, A.attack2);
+    uniform_real_distribution<> disB(B.attack1, B.attack2);
 
     while (turnA < turn || turnB < turn) {
         if (a == b) {
-            hpB -= std::max(disA(gen) - B.defence, 0.0);
+            hpB -= max(disA(gen) - B.defence, 0.0);
             a += B.agility;
             turnA++;
-            hpA -= std::max(disB(gen) - A.defence, 0.0);
+            hpA -= max(disB(gen) - A.defence, 0.0);
             b += A.agility;
             turnB++;
         } else if (a < b) {
-            hpB -= std::max(disA(gen) - B.defence, 0.0);
+            hpB -= max(disA(gen) - B.defence, 0.0);
             a += B.agility;
             turnA++;
         } else {
-            hpA -= std::max(disB(gen) - A.defence, 0.0);
+            hpA -= max(disB(gen) - A.defence, 0.0);
             b += A.agility;
             turnB++;
         }
@@ -114,7 +116,7 @@ void attack(Hero& A, Hero& B, int N) {
     }
 }
 
-std::vector<Hero> heroes;
+vector<Hero> heroes;
 
 void add_hero(int p1, int p2, int p3, int p4) {
     int level = p1 + p2 + p3 + p4;
@@ -137,15 +139,15 @@ void add_hero_level(int sp) {
 }
 
 void train(int count = 1000000) {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, heroes.size() - 1);
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dis(0, heroes.size() - 1);
 
     int n = 0;
     while (n < count) {
         Hero& A = heroes[dis(gen)];
         Hero& B = heroes[dis(gen)];
-        if (&A == &B || std::abs(A.elo - B.elo) >= 400) continue;
+        if (&A == &B || abs(A.elo - B.elo) >= 400) continue;
         attack(A, B, 1);
         n++;
     }
@@ -154,32 +156,68 @@ void train(int count = 1000000) {
 void train2(int limit = 400) {
     for (size_t a = 0; a < heroes.size(); ++a) {
         for (size_t b = a + 1; b < heroes.size(); ++b) {
-            if (limit > std::abs(heroes[a].elo - heroes[b].elo)) {
+            if (limit > abs(heroes[a].elo - heroes[b].elo)) {
                 attack(heroes[a], heroes[b], 1);
             }
         }
     }
 }
 
+void train3(int round = 10) {
+    vector<vector<int>> r(round, vector<int>(heroes.size(), -1));
+
+    cout << "Thực hiện " << round << " vòng đấu ==========================" << endl;
+    // đấu round vòng
+    for (int i = 0; i < round; ++i) {
+        // tạo danh sách theo elo giảm dần
+        vector<int> index(heroes.size());
+        iota(index.begin(), index.end(), 0);
+        sort(index.begin(), index.end(), [](int a, int b) {
+            return heroes[a].elo > heroes[b].elo;
+        });
+        cout << "Vòng " << i+1 << ": " << heroes[index[0]].toString() << endl;
+
+        // đấu các hero trong danh sách
+        for (int k = 0; k < heroes.size(); ++k)
+            if (r[i][index[k]] == -1) {
+                int p = k;
+                while (true) {
+                    p++;
+                    bool found = false;
+                    for (int t = 0; t < i; ++t)
+                        if (r[t][index[k]] == p) {
+                            found = true;
+                            break;
+                        }
+                    if (!found) break;
+                }
+                if (p >= heroes.size()) break;
+                r[i][index[k]] = p;
+                r[i][index[p]] = k;
+                attack(heroes[index[k]], heroes[index[p]], 10);
+            }
+    }
+}
+
 int main() {
     /*
-    std::vector<Hero> h;
+    vector<Hero> h;
     for (int i = 1; i <= 40; ++i) {
         heroes.clear();
         add_hero_level(i);
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::shuffle(heroes.begin(), heroes.end(), gen);
-        h.insert(h.end(), heroes.begin(), heroes.begin() + std::min(10, (int)heroes.size()));
+        random_device rd;
+        mt19937 gen(rd());
+        shuffle(heroes.begin(), heroes.end(), gen);
+        h.insert(h.end(), heroes.begin(), heroes.begin() + min(10, (int)heroes.size()));
     }
     heroes = h;
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::shuffle(heroes.begin(), heroes.end(), gen);
+    random_device rd;
+    mt19937 gen(rd());
+    shuffle(heroes.begin(), heroes.end(), gen);
     */
 
     add_hero(0, 0, 0, 0);
-    for (int lv = 1; lv <= 40; ++lv)
+    for (int lv = 1; lv <= 45; ++lv)
         add_hero_level(lv);
     /*
     for (int lv = 1; lv <= 120; ++lv) {
@@ -218,45 +256,46 @@ int main() {
         add_hero(lv, lv, lv, lv+lv+lv);
     }
     */
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::shuffle(heroes.begin(), heroes.end(), gen);
 
-    std::cout << "Tất cả " << heroes.size() << " heroes ==========================" << std::endl;
-    for (int i = 1; i <= 100; ++i) {
-        train(50'000'000);
-        auto maxHero = *std::max_element(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
+    random_device rd;
+    mt19937 gen(rd());
+    shuffle(heroes.begin(), heroes.end(), gen);
+
+    cout << "Tất cả " << heroes.size() << " heroes ==========================" << endl;
+    for (int i = 1; i <= 10; ++i) {
+        train3(100);
+        auto maxHero = *max_element(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
             return a.elo < b.elo;
         });
-        std::cout << "Vòng " << i << ": " << maxHero.toString() << std::endl;
+        cout << "Vòng " << i << ": " << maxHero.toString() << endl;
     }
 
-    std::cout << "Xếp theo ELO ===============" << std::endl;
-    std::sort(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
+    cout << "Xếp theo ELO ===============" << endl;
+    sort(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
         return a.elo < b.elo;
     });
     for (const auto& h : heroes) {
-        std::cout << h.toString() << std::endl;
+        cout << h.toString() << endl;
     }
     
-    std::cout << "Xếp theo Tỉ lệ thắng ===============" << std::endl;
-    std::sort(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
+    cout << "Xếp theo Tỉ lệ thắng ===============" << endl;
+    sort(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
         double rateA = a.win / (double)(a.win + a.draw + a.lose);
         double rateB = b.win / (double)(b.win + b.draw + b.lose);
         return rateA < rateB;
     });
     for (const auto& h : heroes) {
-        std::cout << h.toString() << std::endl;
+        cout << h.toString() << endl;
     }
 
-    std::cout << "Xếp theo Tỉ lệ thua ===============" << std::endl;
-    std::sort(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
+    cout << "Xếp theo Tỉ lệ thua ===============" << endl;
+    sort(heroes.begin(), heroes.end(), [](const Hero& a, const Hero& b) {
         double rateA = a.lose / (double)(a.win + a.draw + a.lose);
         double rateB = b.lose / (double)(b.win + b.draw + b.lose);
         return rateA < rateB;
     });
     for (const auto& h : heroes) {
-        std::cout << h.toString() << std::endl;
+        cout << h.toString() << endl;
     }
 
 
